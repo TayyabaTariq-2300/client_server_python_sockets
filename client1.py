@@ -1,8 +1,10 @@
+
 # === CLIENT ===
 import socket
 import sounddevice as sd
 import numpy as np
 import threading
+import collections
 
 CHUNK_DURATION = 0.02
 RATE = 48000
@@ -30,16 +32,36 @@ def send_audio():
             sd.sleep(1000)
 
 def receive_audio():
+    import time
+    buffer = collections.deque()
+    delay_seconds = 2  # Delay in seconds
+    buffer_size = int(delay_seconds / CHUNK_DURATION)  # Number of chunks for the delay
+
     with sd.OutputStream(samplerate=RATE, channels=1, dtype='float32',
                          blocksize=CHUNK) as stream:
-        print("Speaker playback started...")
+        print("Speaker playback started (with delay)...")
+
+        # Fill buffer first
+        print(f"Buffering for {delay_seconds} seconds...")
+        while len(buffer) < buffer_size:
+            try:
+                data, _ = sock.recvfrom(4096)
+                audio = np.frombuffer(data, dtype='float32')
+                buffer.append(audio)
+            except Exception as e:
+                print("Receive error (during buffering):", e)
+
+        # Play with delay
         while True:
             try:
                 data, _ = sock.recvfrom(4096)
                 audio = np.frombuffer(data, dtype='float32')
-                stream.write(audio)
+                buffer.append(audio)
+
+                to_play = buffer.popleft()
+                stream.write(to_play)
             except Exception as e:
-                print("Receive error:", e)
+                print("Receive/play error:", e)
 
 # Start both send and receive
 threading.Thread(target=send_audio).start()
