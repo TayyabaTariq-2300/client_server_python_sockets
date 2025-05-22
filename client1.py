@@ -1,12 +1,8 @@
-
-
 # === CLIENT ===
 import socket
 import sounddevice as sd
 import numpy as np
 import threading
-
-is_speaking = False
 
 CHUNK_DURATION = 0.02
 RATE = 48000
@@ -15,7 +11,7 @@ CHUNK = int(RATE * CHUNK_DURATION)
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind(('0.0.0.0', 0))  # Bind to any available port
 
-server_ip = '192.168.100.12'  # Use your actual server IP in LAN testing
+server_ip = '127.0.0.1'  # Use your actual server IP in LAN testing
 server_port = 5000
 
 def send_audio():
@@ -45,15 +41,6 @@ def receive_audio():
             except Exception as e:
                 print("Receive error:", e)
 
-
-
 # Start both send and receive
 threading.Thread(target=send_audio).start()
 threading.Thread(target=receive_audio).start()
-
-
-
-
-
-
-
