@@ -1,7 +1,3 @@
-
-
-
-
 # === SERVER ===
 import socket
 import threading
